@@ -1,0 +1,84 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  //previewFeatures = ["referentialActions"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User{
+  
+  id String @id @default(uuid())
+  name String
+  email String @unique
+  senha String 
+  foto String
+  posts Posts[] 
+
+  comentarios Comentario[]
+  likes Like[] 
+
+  @@map("users")
+
+}
+
+
+model Posts{
+  id String @id @default(uuid())
+  content String
+  created_at DateTime
+  userId String
+  user User @relation( fields: [userId] , references: [id] , onDelete: Cascade )
+
+  comentarios Comentario[]
+  likes Like[]
+
+
+  @@map("posts")
+
+}
+
+model Comentario{
+  id String @id @default(uuid())
+  content String
+  created_at DateTime
+
+  userId String
+  user User @relation( fields: [userId] , references: [id] , onDelete: Cascade )
+
+  postId String 
+  post Posts @relation( fields : [postId] , references: [id] , onDelete: Cascade)
+
+
+  likes Like[]
+  @@map("comentarios")
+}
+
+
+model Like{
+  id String @id @default(uuid())
+  created_at DateTime
+
+
+  userId String
+  user User @relation( fields: [userId] , references: [id] , onDelete: Cascade )
+
+  postId      String?
+  commentId   String?
+
+  post        Posts ?    @relation(fields: [postId], references: [id])
+  comentario     Comentario ? @relation(fields: [commentId], references: [id])
+  @@unique([postId, commentId])
+
+  @@map("likes")
+
+}
+
